@@ -1,7 +1,3 @@
-# seQRly – QR Codes That Save the Day
-
->One QR, endless possibilities. Create smart QR codes for medical emergencies, lost items, vehicles, or custom content – all managed from a sleek, dark‑themed dashboard.
-
 >
 ---
 
@@ -15,6 +11,10 @@
 
 >
 ---
+
+# seQRly – QR Codes That Save the Day
+>One QR, endless possibilities. Create smart QR codes for medical emergencies, lost items, vehicles, or custom content – all managed from a sleek, dark‑themed dashboard.
+
 
 ## ✨ Features
 

@@ -2,7 +2,7 @@
 
 > One QR, endless possibilities. Create smart QR codes for medical emergencies, lost items, vehicles, or custom content – all managed from a sleek, dark‑themed dashboard.
 
-![seQRly banner](https://via.placeholder.com/1200x400/0d0d12/d4a373?text=seQRly)
+<img width="1317" height="769" alt="Screenshot 2026-08-22 222535" src="https://github.com/user-attachments/assets/f5e47760-37ee-45db-95db-c63b97450108" />
 
 ---
 

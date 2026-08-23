@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}QR Generated – seQRly{% endblock %}
+
+{% block content %}
+<div class="form-card" style="text-align:center;">
+    <h2>✅ QR Code Generated!</h2>
+    <p class="sub">Your Medical QR is ready to use.</p>
+
+    <div style="margin:2rem 0;">
+        <img src="{{ url_for('qr_image', filename=qr_filename) }}" alt="QR Code" style="max-width:250px; border-radius:var(--radius-sm); border:1px solid var(--border-medium);" />
+    </div>
+
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="{{ url_for('view_pack', pack_id=pack.id) }}" target="_blank" class="btn btn-secondary">View Public Page</a>
+        <a href="{{ url_for('pack_dashboard', pack_id=pack.id, secret=secret) }}" class="btn btn-primary">Manage Pack</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Dashboard</a>
+    </div>
+
+    <div style="margin-top:2rem; padding:1rem; background:var(--bg-elevated); border-radius:var(--radius-sm); border:1px solid var(--border-medium);">
+        <strong>Secret Key:</strong> <code style="background:var(--bg-base); padding:0.2rem 0.5rem; border-radius:4px;">{{ secret }}</code><br />
+        <small style="color:var(--text-muted);">Keep this secret! You need it to edit or delete your pack.</small>
+    </div>
+</div>
+{% endblock %}

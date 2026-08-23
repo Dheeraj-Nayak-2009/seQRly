@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Vehicle QR – seQRly{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2>🚗 Vehicle Data QR</h2>
+    <p class="sub">Store vehicle details, owner info, and documents – all in one QR.</p>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <!-- Vehicle Details -->
+        <div class="section-title"><i class="fa-regular fa-car"></i> Vehicle Details</div>
+        <div class="form-group">
+            <label for="registration_number">Registration Number *</label>
+            <input type="text" id="registration_number" name="registration_number" placeholder="e.g. KA‑01‑AB‑1234" required />
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="make">Make *</label>
+                <input type="text" id="make" name="make" placeholder="e.g. Toyota" required />
+            </div>
+            <div class="form-group">
+                <label for="model">Model *</label>
+                <input type="text" id="model" name="model" placeholder="e.g. Innova Crysta" required />
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="year">Year</label>
+                <input type="number" id="year" name="year" placeholder="e.g. 2020" />
+            </div>
+            <div class="form-group">
+                <label for="color">Colour</label>
+                <input type="text" id="color" name="color" placeholder="e.g. Silver" />
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="fuel_type">Fuel Type</label>
+                <select id="fuel_type" name="fuel_type">
+                    <option value="">Select</option>
+                    <option value="Petrol">Petrol</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="CNG">CNG</option>
+                    <option value="Electric">Electric</option>
+                    <option value="Hybrid">Hybrid</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="transmission">Transmission</label>
+                <select id="transmission" name="transmission">
+                    <option value="">Select</option>
+                    <option value="Manual">Manual</option>
+                    <option value="Automatic">Automatic</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="engine_number">Engine Number *</label>
+                <input type="text" id="engine_number" name="engine_number" placeholder="As per RC" required />
+            </div>
+            <div class="form-group">
+                <label for="chassis_number">Chassis Number *</label>
+                <input type="text" id="chassis_number" name="chassis_number" placeholder="Indian VIN equivalent" required />
+            </div>
+        </div>
+
+        <!-- Owner Information -->
+        <div class="section-title"><i class="fa-regular fa-user"></i> Owner Information</div>
+        <div class="form-group">
+            <label for="owner_name">Owner Name *</label>
+            <input type="text" id="owner_name" name="owner_name" required />
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="owner_phone">Phone Number *</label>
+                <input type="tel" id="owner_phone" name="owner_phone" placeholder="10-digit mobile" required />
+            </div>
+            <div class="form-group">
+                <label for="owner_email">Email</label>
+                <input type="email" id="owner_email" name="owner_email" placeholder="Optional" />
+            </div>
+        </div>
+
+        <!-- Insurance & RC -->
+        <div class="section-title"><i class="fa-regular fa-file-contract"></i> Insurance & Registration</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="insurance_policy_number">Insurance Policy Number</label>
+                <input type="text" id="insurance_policy_number" name="insurance_policy_number" />
+            </div>
+            <div class="form-group">
+                <label for="insurance_expiry_date">Insurance Expiry Date</label>
+                <input type="date" id="insurance_expiry_date" name="insurance_expiry_date" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="rc_details">RC Details (fitness, etc.)</label>
+            <textarea id="rc_details" name="rc_details" rows="2" placeholder="Any extra info from RC"></textarea>
+        </div>
+
+        <!-- Towing Notes -->
+        <div class="section-title"><i class="fa-regular fa-truck-fast"></i> Towing / Recovery</div>
+        <div class="form-group">
+            <label for="tow_notes">Towing Notes</label>
+            <textarea id="tow_notes" name="tow_notes" rows="2" placeholder="e.g. AWD – flatbed only"></textarea>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="section-title"><i class="fa-regular fa-phone"></i> Emergency Contact (optional)</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="emergency_contact_name">Name</label>
+                <input type="text" id="emergency_contact_name" name="emergency_contact_name" />
+            </div>
+            <div class="form-group">
+                <label for="emergency_contact_phone">Phone</label>
+                <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" placeholder="10-digit mobile" />
+            </div>
+        </div>
+
+        <!-- Additional Notes -->
+        <div class="section-title"><i class="fa-regular fa-note-sticky"></i> Additional Notes</div>
+        <div class="form-group">
+            <textarea name="additional_notes" rows="2" placeholder="Any other relevant info"></textarea>
+        </div>
+
+        <!-- PIN‑protected Documents -->
+        <div class="section-title"><i class="fa-regular fa-file-lock"></i> Documents (PIN‑protected)</div>
+        <div class="form-group">
+            <label for="dl_file">Driver's Licence (PDF / image)</label>
+            <input type="file" id="dl_file" name="dl_file" accept="image/*,application/pdf" />
+            <small style="display:block; color:var(--text-muted);">Viewers will need the PIN to see this document.</small>
+        </div>
+        <div class="form-group">
+            <label for="ins_file">Insurance / Registration Document (PDF / image)</label>
+            <input type="file" id="ins_file" name="ins_file" accept="image/*,application/pdf" />
+            <small style="display:block; color:var(--text-muted);">Viewers will need the PIN to see this document.</small>
+        </div>
+
+        <!-- Logo Upload -->
+        <div class="section-title"><i class="fa-regular fa-image"></i> Logo (optional)</div>
+        <div class="form-group">
+            <input type="file" name="logo" accept="image/*" />
+            <small style="display:block; color:var(--text-muted); margin-top:0.3rem;">Upload a logo to display on your public page (replaces QR code).</small>
+        </div>
+
+        <!-- Security (PIN + Security Question) -->
+        <div class="section-title"><i class="fa-regular fa-lock"></i> Security</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="pin">PIN (required to view documents)</label>
+                <input type="password" id="pin" name="pin" placeholder="4-8 digits" />
+                <small style="display:block; color:var(--text-muted);">Needed to unlock driver's licence and insurance documents.</small>
+            </div>
+            <div class="form-group">
+                <label for="security_question">Security Question (optional)</label>
+                <input type="text" id="security_question" name="security_question" placeholder="e.g. What is the last 4 digits of your VIN?" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="security_answer">Security Answer</label>
+            <input type="text" id="security_answer" name="security_answer" placeholder="Case‑insensitive" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Generate QR</button>
+            <a href="{{ url_for('select') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

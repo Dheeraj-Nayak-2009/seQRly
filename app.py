@@ -27,7 +27,6 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# ------------------------- Models -------------------------
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -49,11 +48,11 @@ def load_user(user_id):
 class QRData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    use_case = db.Column(db.String(20), nullable=False)   # medical, lost, vehicle, custom
-    status = db.Column(db.String(20), default='active')   # active, stolen, recovered, inactive
+    use_case = db.Column(db.String(20), nullable=False)
+    status = db.Column(db.String(20), default='active')
     secret_key = db.Column(db.String(64), unique=True, nullable=False)
-    data = db.Column(db.Text, nullable=False)             # JSON – stores all structured fields
-    ui = db.Column(db.Text, nullable=False)               # JSON – now always empty
+    data = db.Column(db.Text, nullable=False)
+    ui = db.Column(db.Text, nullable=False)
     security_question = db.Column(db.String(200), nullable=True)
     security_answer_hash = db.Column(db.String(64), nullable=True)
     pin_hash = db.Column(db.String(64), nullable=True)
@@ -114,7 +113,7 @@ class ScanLog(db.Model):
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pack_id = db.Column(db.Integer, db.ForeignKey('qr_data.id'), nullable=False)
-    type = db.Column(db.String(30), nullable=False)  # found_report, contact_request
+    type = db.Column(db.String(30), nullable=False)
     message = db.Column(db.Text, nullable=False)
     read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -122,7 +121,6 @@ class Notification(db.Model):
 
     pack = db.relationship('QRData', backref=db.backref('notifications', lazy=True, cascade='all, delete-orphan'))
 
-# ------------------------- Helper Functions -------------------------
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -170,15 +168,11 @@ def calculate_age(born_str):
 
 def get_real_ip(request):
     """Get the real client IP from request headers."""
-    # Check for X-Forwarded-For header (used by proxies)
     forwarded = request.headers.get('X-Forwarded-For')
     if forwarded:
-        # The first IP in the list is the real client
         return forwarded.split(',')[0].strip()
-    # Fallback to remote_addr
     return request.remote_addr
 
-# ------------- Template Filter ----------------------------
 
 @app.template_filter('format_date')
 def format_date_filter(date_str):
@@ -209,7 +203,6 @@ def utc_to_ist_filter(utc_dt):
     """Convert UTC datetime to IST (UTC+5:30) string."""
     if not utc_dt:
         return ''
-    # If it's a string, parse it (but we pass datetime objects)
     from datetime import timedelta
     ist = utc_dt + timedelta(hours=5, minutes=30)
     return ist.strftime('%d %b %Y %I:%M %p')
@@ -217,9 +210,15 @@ def utc_to_ist_filter(utc_dt):
 @app.template_filter('from_json')
 def from_json_filter(s):
     return json.loads(s)
-# ------------------------- Routes -------------------------
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static', 'images'),
+        'favic.png',
+        mimetype='image/png'
+    )
 
 @app.route('/api/submit_form/<int:pack_id>', methods=['POST'])
 def submit_form(pack_id):
@@ -297,7 +296,6 @@ def dashboard():
     packs = QRData.query.filter_by(user_id=current_user.id).order_by(QRData.created_at.desc()).all()
     return render_template('dashboard.html', packs=packs)
 
-# --- Selection page (choose QR type) ---
 @app.route('/select')
 @login_required
 def select():
@@ -311,22 +309,19 @@ def create(case):
 
     if request.method == 'POST':
         data = {}
-        ui = {}  # Always empty – no customisation
+        ui = {}
 
-        # ---- Medical ----
         if case == 'medical':
             data['patient_name'] = request.form.get('patient_name')
             data['date_of_birth'] = request.form.get('date_of_birth')
             data['age'] = calculate_age(data['date_of_birth'])
             data['blood_group'] = request.form.get('blood_group')
-            # Allergies
             data['allergy_penicillin'] = 'allergy_penicillin' in request.form
             data['allergy_sulfa'] = 'allergy_sulfa' in request.form
             data['allergy_nsaids'] = 'allergy_nsaids' in request.form
             data['allergy_shellfish'] = 'allergy_shellfish' in request.form
             data['allergy_latex'] = 'allergy_latex' in request.form
             data['allergy_other'] = request.form.get('allergy_other') if 'allergy_other' in request.form else ''
-            # Conditions
             data['condition_heart_disease'] = 'condition_heart_disease' in request.form
             data['condition_hypertension'] = 'condition_hypertension' in request.form
             data['condition_diabetes'] = 'condition_diabetes' in request.form
@@ -342,16 +337,12 @@ def create(case):
             data['condition_tuberculosis'] = 'condition_tuberculosis' in request.form
             data['condition_mental_health'] = 'condition_mental_health' in request.form
             data['condition_other'] = request.form.get('condition_other')
-            # Medications
             data['medications'] = request.form.get('medications')
-            # Legal
             data['organ_donor'] = 'organ_donor' in request.form
             data['dnr'] = 'dnr' in request.form
-            # Emergency contact
             data['emergency_contact_name'] = request.form.get('emergency_contact_name')
             data['emergency_contact_relationship'] = request.form.get('emergency_contact_relationship')
             data['emergency_contact_phone'] = request.form.get('emergency_contact_phone')
-            # Healthcare
             data['primary_care_physician'] = request.form.get('primary_care_physician')
             data['primary_care_physician_phone'] = request.form.get('primary_care_physician_phone')
             data['hospital_affiliation'] = request.form.get('hospital_affiliation')
@@ -359,7 +350,6 @@ def create(case):
             data['abha_id'] = request.form.get('abha_id')
             data['additional_notes'] = request.form.get('additional_notes')
 
-        # ---- Lost & Found ----
         elif case == 'lost':
             data['item_name'] = request.form.get('item_name')
             data['item_category'] = request.form.get('item_category')
@@ -375,7 +365,6 @@ def create(case):
             data['contact_phone'] = request.form.get('contact_phone')
             data['contact_email'] = request.form.get('contact_email')
             data['additional_notes'] = request.form.get('additional_notes')
-            # Proof file
             proof = request.files.get('proof_file')
             if proof and allowed_file(proof.filename):
                 fname = secure_filename(proof.filename)
@@ -384,7 +373,6 @@ def create(case):
             else:
                 data['proof_file'] = None
 
-        # ---- Vehicle ----
         elif case == 'vehicle':
             data['registration_number'] = request.form.get('registration_number')
             data['make'] = request.form.get('make')
@@ -405,7 +393,6 @@ def create(case):
             data['emergency_contact_name'] = request.form.get('emergency_contact_name')
             data['emergency_contact_phone'] = request.form.get('emergency_contact_phone')
             data['additional_notes'] = request.form.get('additional_notes')
-            # Files (PIN‑protected)
             dl = request.files.get('dl_file')
             if dl and allowed_file(dl.filename):
                 fname = secure_filename(dl.filename)
@@ -421,32 +408,27 @@ def create(case):
             else:
                 data['ins_file'] = None
 
-        # ---- Custom ----
         else:
             blocks = []
             block_types = request.form.getlist('block_type[]')
             block_contents = request.form.getlist('block_content[]')
-            block_files = request.files.getlist('block_file[]')  # list of FileStorage objects
+            block_files = request.files.getlist('block_file[]')
 
             for idx, btype in enumerate(block_types):
                 content = block_contents[idx] if idx < len(block_contents) else ''
-                # If block type is 'file', handle file upload
                 if btype == 'file':
                     file_obj = block_files[idx] if idx < len(block_files) else None
                     if file_obj and allowed_file(file_obj.filename):
                         fname = secure_filename(file_obj.filename)
-                        # Add timestamp to avoid collisions
                         import time
                         unique_name = f"{int(time.time())}_{fname}"
                         file_obj.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
-                        content = unique_name  # store the filename for later retrieval
+                        content = unique_name
                     else:
-                        content = ''  # or keep existing if edit?
-                # For non-file blocks, content is already set
+                        content = ''
                 blocks.append({'type': btype, 'content': content})
             data['blocks'] = blocks
 
-            # Handle file uploads for custom file blocks
             file_inputs = request.files.getlist('block_file[]')
             file_idx = 0
             for i, block in enumerate(blocks):
@@ -456,19 +438,17 @@ def create(case):
                         if file and allowed_file(file.filename):
                             fname = secure_filename(file.filename)
                             file.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
-                            block['content'] = fname  # store filename
+                            block['content'] = fname
                         else:
-                            block['content'] = ''  # or handle error
+                            block['content'] = ''
                         file_idx += 1
 
-        # --- Logo upload ---
         logo = request.files.get('logo')
         logo_filename = None
         if logo and allowed_file(logo.filename):
             logo_filename = secure_filename(logo.filename)
             logo.save(os.path.join(app.config['UPLOAD_FOLDER'], logo_filename))
 
-        # --- Create QR pack ---
         secret = generate_secret_key()
         new_pack = QRData(
             user_id=current_user.id,
@@ -476,11 +456,10 @@ def create(case):
             status='active',
             secret_key=secret,
             data=json.dumps(data),
-            ui=json.dumps(ui),  # empty dict
+            ui=json.dumps(ui),
             logo_path=logo_filename
         )
 
-        # Security settings: only for lost/vehicle (not for medical)
         if case != 'medical':
             pin = request.form.get('pin')
             security_question = request.form.get('security_question')
@@ -493,28 +472,23 @@ def create(case):
         db.session.add(new_pack)
         db.session.commit()
 
-        # Generate QR
         qr_filename = generate_qr(new_pack.id)
 
         return render_template('success.html', pack=new_pack, qr_filename=qr_filename, secret=secret)
 
-    # GET – show the appropriate creation form
     return render_template(f'create_{case}.html', case=case)
 
 @app.route('/view/<int:pack_id>')
 def view_pack(pack_id):
     pack = QRData.query.get_or_404(pack_id)
 
-    # Get data and UI
     data = pack.get_data()
     ui = pack.get_ui()
 
-    # Privacy check
     if not pack.is_public:
         if not current_user.is_authenticated or current_user.id != pack.user_id:
             return render_template('private.html'), 403
 
-    # Get real IP
     ip = get_real_ip(request)
     ua = request.headers.get('User-Agent')
     geo = get_geolocation(ip)
@@ -544,7 +518,6 @@ def view_pack(pack_id):
 
     return render_template('view.html', pack=pack, data=data, ui=ui, show_sensitive=show_sensitive)
 
-# --- API endpoints ---
 @app.route('/api/report_found/<int:pack_id>', methods=['POST'])
 def report_found(pack_id):
     pack = QRData.query.get_or_404(pack_id)
@@ -632,7 +605,6 @@ def toggle_visibility(pack_id):
     pack = QRData.query.get_or_404(pack_id)
     if pack.user_id != current_user.id:
         return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
-    # Toggle is_public
     pack.is_public = not pack.is_public
     db.session.commit()
     return jsonify({
@@ -670,22 +642,19 @@ def edit_pack(pack_id):
     if request.method == 'POST':
         data = pack.get_data()
 
-        # ---- Update all fields based on use_case ----
         if pack.use_case == 'medical':
             data['patient_name'] = request.form.get('patient_name', data.get('patient_name'))
             data['patient_name'] = request.form.get('patient_name', data.get('patient_name'))
             new_dob = request.form.get('date_of_birth', data.get('date_of_birth'))
             data['date_of_birth'] = new_dob
-            data['age'] = calculate_age(new_dob)   # <-- recompute age
+            data['age'] = calculate_age(new_dob)
             data['blood_group'] = request.form.get('blood_group', data.get('blood_group'))
-            # Allergies
             data['allergy_penicillin'] = 'allergy_penicillin' in request.form
             data['allergy_sulfa'] = 'allergy_sulfa' in request.form
             data['allergy_nsaids'] = 'allergy_nsaids' in request.form
             data['allergy_shellfish'] = 'allergy_shellfish' in request.form
             data['allergy_latex'] = 'allergy_latex' in request.form
             data['allergy_other'] = request.form.get('allergy_other', data.get('allergy_other')) if 'allergy_other' in request.form else ''
-            # Conditions
             data['condition_heart_disease'] = 'condition_heart_disease' in request.form
             data['condition_hypertension'] = 'condition_hypertension' in request.form
             data['condition_diabetes'] = 'condition_diabetes' in request.form
@@ -701,16 +670,12 @@ def edit_pack(pack_id):
             data['condition_tuberculosis'] = 'condition_tuberculosis' in request.form
             data['condition_mental_health'] = 'condition_mental_health' in request.form
             data['condition_other'] = request.form.get('condition_other', data.get('condition_other'))
-            # Medications
             data['medications'] = request.form.get('medications', data.get('medications'))
-            # Legal
             data['organ_donor'] = 'organ_donor' in request.form
             data['dnr'] = 'dnr' in request.form
-            # Emergency contact
             data['emergency_contact_name'] = request.form.get('emergency_contact_name', data.get('emergency_contact_name'))
             data['emergency_contact_relationship'] = request.form.get('emergency_contact_relationship', data.get('emergency_contact_relationship'))
             data['emergency_contact_phone'] = request.form.get('emergency_contact_phone', data.get('emergency_contact_phone'))
-            # Healthcare
             data['primary_care_physician'] = request.form.get('primary_care_physician', data.get('primary_care_physician'))
             data['primary_care_physician_phone'] = request.form.get('primary_care_physician_phone', data.get('primary_care_physician_phone'))
             data['hospital_affiliation'] = request.form.get('hospital_affiliation', data.get('hospital_affiliation'))
@@ -733,13 +698,11 @@ def edit_pack(pack_id):
             data['contact_phone'] = request.form.get('contact_phone', data.get('contact_phone'))
             data['contact_email'] = request.form.get('contact_email', data.get('contact_email'))
             data['additional_notes'] = request.form.get('additional_notes', data.get('additional_notes'))
-            # Proof file – handle separately
             proof = request.files.get('proof_file')
             if proof and allowed_file(proof.filename):
                 fname = secure_filename(proof.filename)
                 proof.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
                 data['proof_file'] = fname
-            # If no new file, keep existing (we don't delete)
 
         elif pack.use_case == 'vehicle':
             data['registration_number'] = request.form.get('registration_number', data.get('registration_number'))
@@ -761,7 +724,6 @@ def edit_pack(pack_id):
             data['emergency_contact_name'] = request.form.get('emergency_contact_name', data.get('emergency_contact_name'))
             data['emergency_contact_phone'] = request.form.get('emergency_contact_phone', data.get('emergency_contact_phone'))
             data['additional_notes'] = request.form.get('additional_notes', data.get('additional_notes'))
-            # File updates
             dl = request.files.get('dl_file')
             if dl and allowed_file(dl.filename):
                 fname = secure_filename(dl.filename)
@@ -773,7 +735,7 @@ def edit_pack(pack_id):
                 ins.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
                 data['ins_file'] = fname
 
-        else:  # custom
+        else:
             blocks = []
             block_types = request.form.getlist('block_type[]')
             block_contents = request.form.getlist('block_content[]')
@@ -782,7 +744,6 @@ def edit_pack(pack_id):
                     blocks.append({'type': btype, 'content': bcontent.strip()})
             data['blocks'] = blocks
 
-        # ---- Security (only for lost/vehicle) ----
         if pack.use_case != 'medical':
             new_pin = request.form.get('pin')
             if new_pin:
@@ -799,30 +760,25 @@ def edit_pack(pack_id):
                 pack.security_question = None
                 pack.security_answer_hash = None
 
-        # ---- Status (common) ----
         new_status = request.form.get('status')
         if new_status in ['active', 'stolen', 'recovered', 'inactive']:
             pack.status = new_status
 
-        # ---- Logo update ----
         logo = request.files.get('logo')
         if logo and allowed_file(logo.filename):
             logo_filename = secure_filename(logo.filename)
             logo.save(os.path.join(app.config['UPLOAD_FOLDER'], logo_filename))
             pack.logo_path = logo_filename
 
-        is_public = request.form.get('is_public') == 'on'   # checkbox returns 'on' if checked
+        is_public = request.form.get('is_public') == 'on'
         pack.is_public = is_public
 
-        # ---- Save ----
         pack.set_data(data)
-        # UI stays empty – we never update it
         db.session.commit()
         flash('Pack updated successfully!', 'success')
         return redirect(url_for('pack_dashboard', pack_id=pack.id, secret=pack.secret_key))
 
 
-    # GET – show edit form
     data = pack.get_data()
     ui = pack.get_ui()
     return render_template('edit.html', pack=pack, data=data, ui=ui)
@@ -843,7 +799,6 @@ def delete_pack(pack_id):
     flash('Pack deleted', 'info')
     return redirect(url_for('dashboard'))
 
-# ------------------------- Static files -------------------------
 @app.route('/static/qrcodes/<filename>')
 def qr_image(filename):
     return send_from_directory(app.config['QR_FOLDER'], filename)
@@ -852,7 +807,6 @@ def qr_image(filename):
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# ------------------------- Run -------------------------
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

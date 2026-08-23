@@ -49,3 +49,6 @@
 | **Google Fonts** (Inter & Playfair Display) | Typography |
 
 ---
+
+<img width="938" height="416" alt="Screenshot 2026-08-23 193429" src="https://github.com/user-attachments/assets/3b2dc1dd-1ee3-4ca6-8738-b9121a6b2f73" />
+

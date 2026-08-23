@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Lost & Found QR – seQRly{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2>🔍 Lost & Found QR</h2>
+    <p class="sub">Attach this QR to your belongings so finders can contact you.</p>
+
+    <form method="POST" enctype="multipart/form-data">
+        
+        <div class="section-title"><i class="fa-solid fa-box"></i> Item Details</div>
+        <div class="form-group">
+            <label for="item_name">Item Name *</label>
+            <input type="text" id="item_name" name="item_name" placeholder="e.g. iPhone 14" required />
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="item_category">Category</label>
+                <select id="item_category" name="item_category">
+                    <option value="">Select</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Luggage">Luggage</option>
+                    <option value="Pet">Pet</option>
+                    <option value="Document">Document</option>
+                    <option value="Keys">Keys</option>
+                    <option value="Wallet">Wallet</option>
+                    <option value="Phone">Phone</option>
+                    <option value="Laptop">Laptop</option>
+                    <option value="Bag">Bag</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="brand">Brand</label>
+                <input type="text" id="brand" name="brand" placeholder="e.g. Apple" />
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="model">Model</label>
+                <input type="text" id="model" name="model" placeholder="e.g. 14 Pro" />
+            </div>
+            <div class="form-group">
+                <label for="color">Colour</label>
+                <input type="text" id="color" name="color" placeholder="e.g. Space Grey" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="unique_identifier">Unique Identifier (IMEI / Serial No.)</label>
+            <input type="text" id="unique_identifier" name="unique_identifier" placeholder="Optional – helps identify your item" />
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3" placeholder="Distinguishing marks, scratches, stickers, etc."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="reward">Reward (optional)</label>
+            <input type="text" id="reward" name="reward" placeholder="e.g. ₹500" />
+        </div>
+
+        
+        <div class="section-title"><i class="fa-solid fa-location-dot"></i> Where & When</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="last_known_location">Last Known Location</label>
+                <input type="text" id="last_known_location" name="last_known_location" placeholder="e.g. MG Road Metro Station" />
+            </div>
+            <div class="form-group">
+                <label for="date_lost">Date Lost</label>
+                <input type="date" id="date_lost" name="date_lost" />
+            </div>
+        </div>
+
+        
+        <div class="section-title"><i class="fa-solid fa-address-card"></i> Your Contact Details</div>
+        <div class="form-group">
+            <label for="contact_name">Your Name *</label>
+            <input type="text" id="contact_name" name="contact_name" required />
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="contact_phone">Phone Number *</label>
+                <input type="tel" id="contact_phone" name="contact_phone" placeholder="10-digit mobile" required />
+            </div>
+            <div class="form-group">
+                <label for="contact_email">Email</label>
+                <input type="email" id="contact_email" name="contact_email" placeholder="Optional" />
+            </div>
+        </div>
+
+        
+        <div class="section-title"><i class="fa-solid fa-file-image"></i> Proof of Ownership (optional)</div>
+        <div class="form-group">
+            <label for="proof_file">Upload receipt, photo, or document</label>
+            <input type="file" id="proof_file" name="proof_file" accept="image/*,application/pdf" />
+        </div>
+
+        
+        <div class="section-title"><i class="fa-solid fa-note-sticky"></i> Additional Notes</div>
+        <div class="form-group">
+            <textarea name="additional_notes" rows="2" placeholder="Anything else finders should know?"></textarea>
+        </div>
+
+        
+        <div class="section-title"><i class="fa-solid fa-image"></i> Logo (optional)</div>
+        <div class="form-group">
+            <input type="file" name="logo" accept="image/*" />
+            <small style="display:block; color:var(--text-muted); margin-top:0.3rem;">Upload a logo to display on your public page (replaces QR code).</small>
+        </div>
+
+        
+        <div class="section-title"><i class="fa-solid fa-lock"></i> Privacy & Security</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="pin">PIN (optional – protects sensitive data)</label>
+                <input type="password" id="pin" name="pin" placeholder="4-8 digits" />
+                <small style="display:block; color:var(--text-muted);">Finders will need this to see your contact info.</small>
+            </div>
+            <div class="form-group">
+                <label for="security_question">Security Question (for finders)</label>
+                <input type="text" id="security_question" name="security_question" placeholder="e.g. What is the brand of this item?" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="security_answer">Security Answer</label>
+            <input type="text" id="security_answer" name="security_answer" placeholder="Case‑insensitive" />
+            <small style="display:block; color:var(--text-muted);">Finders must answer this to reveal your contact info.</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Generate QR</button>
+            <a href="{{ url_for('select') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+
+{% block title %}Edit QR Pack – seQRly{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2>✏️ Edit {% if pack.use_case == 'medical' %}Medical{% elif pack.use_case == 'lost' %}Lost & Found{% elif pack.use_case == 'vehicle' %}Vehicle{% else %}Custom{% endif %} QR</h2>
+    <p class="sub">Update the information for this QR pack.</p>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        
+        {% if pack.use_case == 'medical' %}
+            <div class="section-title"><i class="fa-solid fa-user"></i> Patient Information</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="patient_name">Full Name *</label>
+                    <input type="text" id="patient_name" name="patient_name" value="{{ data.patient_name }}" required />
+                </div>
+                <div class="form-group">
+                    <label for="date_of_birth">Date of Birth</label>
+                    <input type="date" id="date_of_birth" name="date_of_birth" value="{{ data.date_of_birth }}" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="blood_group">Blood Group *</label>
+                <select id="blood_group" name="blood_group" required>
+                    <option value="">Select</option>
+                    {% for bg in ['A+','A-','B+','B-','AB+','AB-','O+','O-'] %}
+                        <option value="{{ bg }}" {% if data.blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-circle-exclamation"></i> Allergies</div>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="allergy_penicillin" {% if data.allergy_penicillin %}checked{% endif %} /> Penicillin</label>
+                <label><input type="checkbox" name="allergy_sulfa" {% if data.allergy_sulfa %}checked{% endif %} /> Sulfa</label>
+                <label><input type="checkbox" name="allergy_nsaids" {% if data.allergy_nsaids %}checked{% endif %} /> NSAIDs</label>
+                <label><input type="checkbox" name="allergy_shellfish" {% if data.allergy_shellfish %}checked{% endif %} /> Shellfish</label>
+                <label><input type="checkbox" name="allergy_latex" {% if data.allergy_latex %}checked{% endif %} /> Latex</label>
+                <label style="flex:1 1 100%;">
+                    <input type="checkbox" name="allergy_other" id="allergy_other_check" {% if data.allergy_other %}checked{% endif %} />
+                    Other: <input type="text" name="allergy_other" value="{{ data.allergy_other }}" placeholder="Specify" style="width:auto; flex:1; min-width:100px;" />
+                </label>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-heart"></i> Chronic Conditions</div>
+            <div class="checkbox-group">
+                {% set conditions = [
+                    ('heart_disease', 'Heart Disease'),
+                    ('hypertension', 'Hypertension'),
+                    ('diabetes', 'Diabetes'),
+                    ('asthma', 'Asthma'),
+                    ('copd', 'COPD'),
+                    ('kidney_disease', 'Kidney Disease'),
+                    ('liver_disease', 'Liver Disease'),
+                    ('stroke', 'Stroke'),
+                    ('cancer', 'Cancer'),
+                    ('thyroid', 'Thyroid'),
+                    ('epilepsy', 'Epilepsy'),
+                    ('hiv_aids', 'HIV/AIDS'),
+                    ('tuberculosis', 'Tuberculosis'),
+                    ('mental_health', 'Mental Health')
+                ] %}
+                {% for key, label in conditions %}
+                    <label><input type="checkbox" name="condition_{{ key }}" {% if data['condition_' + key] %}checked{% endif %} /> {{ label }}</label>
+                {% endfor %}
+                <label style="flex:1 1 100%;">
+                    <input type="checkbox" name="condition_other" id="condition_other_check" {% if data.condition_other %}checked{% endif %} />
+                    Other: <input type="text" name="condition_other" value="{{ data.condition_other }}" placeholder="Specify" style="width:auto; flex:1; min-width:100px;" />
+                </label>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-prescription"></i> Current Medications</div>
+            <div class="form-group">
+                <textarea name="medications" placeholder="e.g. Metformin 500mg, Lisinopril 10mg ...">{{ data.medications }}</textarea>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-scale-balanced"></i> Legal & Advance Directives</div>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="organ_donor" {% if data.organ_donor %}checked{% endif %} /> Organ Donor</label>
+                <label><input type="checkbox" name="dnr" {% if data.dnr %}checked{% endif %} /> DNR (Do Not Resuscitate) – document on file</label>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-phone"></i> Emergency Contact</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="emergency_contact_name">Name *</label>
+                    <input type="text" id="emergency_contact_name" name="emergency_contact_name" value="{{ data.emergency_contact_name }}" required />
+                </div>
+                <div class="form-group">
+                    <label for="emergency_contact_relationship">Relationship *</label>
+                    <select id="emergency_contact_relationship" name="emergency_contact_relationship" required>
+                        <option value="">Select</option>
+                        {% for rel in ['Spouse','Parent','Sibling','Child','Friend','Other'] %}
+                            <option value="{{ rel }}" {% if data.emergency_contact_relationship == rel %}selected{% endif %}>{{ rel }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="emergency_contact_phone">Phone Number *</label>
+                <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" value="{{ data.emergency_contact_phone }}" required />
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-hospital"></i> Primary Care & IDs</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="primary_care_physician">Primary Care Physician</label>
+                    <input type="text" id="primary_care_physician" name="primary_care_physician" value="{{ data.primary_care_physician }}" />
+                </div>
+                <div class="form-group">
+                    <label for="primary_care_physician_phone">PCP Phone</label>
+                    <input type="tel" id="primary_care_physician_phone" name="primary_care_physician_phone" value="{{ data.primary_care_physician_phone }}" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="hospital_affiliation">Preferred Hospital / Clinic</label>
+                <input type="text" id="hospital_affiliation" name="hospital_affiliation" value="{{ data.hospital_affiliation }}" />
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="insurance_policy_number">Insurance Policy Number</label>
+                    <input type="text" id="insurance_policy_number" name="insurance_policy_number" value="{{ data.insurance_policy_number }}" />
+                </div>
+                <div class="form-group">
+                    <label for="abha_id">ABHA ID (Ayushman Bharat)</label>
+                    <input type="text" id="abha_id" name="abha_id" value="{{ data.abha_id }}" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="additional_notes">Additional Notes</label>
+                <textarea name="additional_notes" placeholder="Any other relevant info (e.g., pacemaker, implants)">{{ data.additional_notes }}</textarea>
+            </div>
+
+        
+        {% elif pack.use_case == 'lost' %}
+            <div class="section-title"><i class="fa-solid fa-box"></i> Item Details</div>
+            <div class="form-group">
+                <label for="item_name">Item Name *</label>
+                <input type="text" id="item_name" name="item_name" value="{{ data.item_name }}" required />
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="item_category">Category</label>
+                    <select id="item_category" name="item_category">
+                        <option value="">Select</option>
+                        <option value="Electronics" {% if data.item_category == 'Electronics' %}selected{% endif %}>Electronics</option>
+                        <option value="Luggage" {% if data.item_category == 'Luggage' %}selected{% endif %}>Luggage</option>
+                        <option value="Pet" {% if data.item_category == 'Pet' %}selected{% endif %}>Pet</option>
+                        <option value="Document" {% if data.item_category == 'Document' %}selected{% endif %}>Document</option>
+                        <option value="Keys" {% if data.item_category == 'Keys' %}selected{% endif %}>Keys</option>
+                        <option value="Wallet" {% if data.item_category == 'Wallet' %}selected{% endif %}>Wallet</option>
+                        <option value="Phone" {% if data.item_category == 'Phone' %}selected{% endif %}>Phone</option>
+                        <option value="Laptop" {% if data.item_category == 'Laptop' %}selected{% endif %}>Laptop</option>
+                        <option value="Bag" {% if data.item_category == 'Bag' %}selected{% endif %}>Bag</option>
+                        <option value="Other" {% if data.item_category == 'Other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="brand">Brand</label>
+                    <input type="text" id="brand" name="brand" value="{{ data.brand }}" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="model">Model</label>
+                    <input type="text" id="model" name="model" value="{{ data.model }}" />
+                </div>
+                <div class="form-group">
+                    <label for="color">Colour</label>
+                    <input type="text" id="color" name="color" value="{{ data.color }}" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="unique_identifier">Unique Identifier (IMEI / Serial No.)</label>
+                <input type="text" id="unique_identifier" name="unique_identifier" value="{{ data.unique_identifier }}" />
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3">{{ data.description }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="reward">Reward (optional)</label>
+                <input type="text" id="reward" name="reward" value="{{ data.reward }}" />
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-location-dot"></i> Where & When</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="last_known_location">Last Known Location</label>
+                    <input type="text" id="last_known_location" name="last_known_location" value="{{ data.last_known_location }}" />
+                </div>
+                <div class="form-group">
+                    <label for="date_lost">Date Lost</label>
+                    <input type="date" id="date_lost" name="date_lost" value="{{ data.date_lost }}" />
+                </div>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-address-card"></i> Your Contact Details</div>
+            <div class="form-group">
+                <label for="contact_name">Your Name *</label>
+                <input type="text" id="contact_name" name="contact_name" value="{{ data.contact_name }}" required />
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="contact_phone">Phone Number *</label>
+                    <input type="tel" id="contact_phone" name="contact_phone" value="{{ data.contact_phone }}" required />
+                </div>
+                <div class="form-group">
+                    <label for="contact_email">Email</label>
+                    <input type="email" id="contact_email" name="contact_email" value="{{ data.contact_email }}" />
+                </div>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-file-image"></i> Proof of Ownership (optional)</div>
+            <div class="form-group">
+                <label for="proof_file">Upload receipt, photo, or document</label>
+                <input type="file" id="proof_file" name="proof_file" accept="image/*,application/pdf" />
+                {% if data.proof_file %}
+                    <p style="margin-top:0.3rem; font-size:0.85rem; color:var(--text-muted);">Current: <a href="{{ url_for('uploaded_file', filename=data.proof_file) }}" target="_blank">{{ data.proof_file }}</a></p>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="additional_notes">Additional Notes</label>
+                <textarea name="additional_notes" rows="2">{{ data.additional_notes }}</textarea>
+            </div>
+
+        
+        {% elif pack.use_case == 'vehicle' %}
+            <div class="section-title"><i class="fa-solid fa-car"></i> Vehicle Details</div>
+            <div class="form-group">
+                <label for="registration_number">Registration Number *</label>
+                <input type="text" id="registration_number" name="registration_number" value="{{ data.registration_number }}" required />
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="make">Make *</label>
+                    <input type="text" id="make" name="make" value="{{ data.make }}" required />
+                </div>
+                <div class="form-group">
+                    <label for="model">Model *</label>
+                    <input type="text" id="model" name="model" value="{{ data.model }}" required />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="year">Year</label>
+                    <input type="number" id="year" name="year" value="{{ data.year }}" />
+                </div>
+                <div class="form-group">
+                    <label for="color">Colour</label>
+                    <input type="text" id="color" name="color" value="{{ data.color }}" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="fuel_type">Fuel Type</label>
+                    <select id="fuel_type" name="fuel_type">
+                        <option value="">Select</option>
+                        <option value="Petrol" {% if data.fuel_type == 'Petrol' %}selected{% endif %}>Petrol</option>
+                        <option value="Diesel" {% if data.fuel_type == 'Diesel' %}selected{% endif %}>Diesel</option>
+                        <option value="CNG" {% if data.fuel_type == 'CNG' %}selected{% endif %}>CNG</option>
+                        <option value="Electric" {% if data.fuel_type == 'Electric' %}selected{% endif %}>Electric</option>
+                        <option value="Hybrid" {% if data.fuel_type == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transmission">Transmission</label>
+                    <select id="transmission" name="transmission">
+                        <option value="">Select</option>
+                        <option value="Manual" {% if data.transmission == 'Manual' %}selected{% endif %}>Manual</option>
+                        <option value="Automatic" {% if data.transmission == 'Automatic' %}selected{% endif %}>Automatic</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="engine_number">Engine Number *</label>
+                    <input type="text" id="engine_number" name="engine_number" value="{{ data.engine_number }}" required />
+                </div>
+                <div class="form-group">
+                    <label for="chassis_number">Chassis Number *</label>
+                    <input type="text" id="chassis_number" name="chassis_number" value="{{ data.chassis_number }}" required />
+                </div>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-user"></i> Owner Information</div>
+            <div class="form-group">
+                <label for="owner_name">Owner Name *</label>
+                <input type="text" id="owner_name" name="owner_name" value="{{ data.owner_name }}" required />
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="owner_phone">Phone Number *</label>
+                    <input type="tel" id="owner_phone" name="owner_phone" value="{{ data.owner_phone }}" required />
+                </div>
+                <div class="form-group">
+                    <label for="owner_email">Email</label>
+                    <input type="email" id="owner_email" name="owner_email" value="{{ data.owner_email }}" />
+                </div>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-file-contract"></i> Insurance & Registration</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="insurance_policy_number">Insurance Policy Number</label>
+                    <input type="text" id="insurance_policy_number" name="insurance_policy_number" value="{{ data.insurance_policy_number }}" />
+                </div>
+                <div class="form-group">
+                    <label for="insurance_expiry_date">Insurance Expiry Date</label>
+                    <input type="date" id="insurance_expiry_date" name="insurance_expiry_date" value="{{ data.insurance_expiry_date }}" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="rc_details">RC Details (fitness, etc.)</label>
+                <textarea id="rc_details" name="rc_details" rows="2">{{ data.rc_details }}</textarea>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-truck-fast"></i> Towing / Recovery</div>
+            <div class="form-group">
+                <label for="tow_notes">Towing Notes</label>
+                <textarea id="tow_notes" name="tow_notes" rows="2">{{ data.tow_notes }}</textarea>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-phone"></i> Emergency Contact (optional)</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="emergency_contact_name">Name</label>
+                    <input type="text" id="emergency_contact_name" name="emergency_contact_name" value="{{ data.emergency_contact_name }}" />
+                </div>
+                <div class="form-group">
+                    <label for="emergency_contact_phone">Phone</label>
+                    <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" value="{{ data.emergency_contact_phone }}" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="additional_notes">Additional Notes</label>
+                <textarea name="additional_notes" rows="2">{{ data.additional_notes }}</textarea>
+            </div>
+
+            <div class="section-title"><i class="fa-solid fa-file-lock"></i> Documents (PIN‑protected)</div>
+            <div class="form-group">
+                <label for="dl_file">Driver's Licence (PDF / image)</label>
+                <input type="file" id="dl_file" name="dl_file" accept="image/*,application/pdf" />
+                {% if data.dl_file %}
+                    <p style="margin-top:0.3rem; font-size:0.85rem; color:var(--text-muted);">Current: <a href="{{ url_for('uploaded_file', filename=data.dl_file) }}" target="_blank">{{ data.dl_file }}</a></p>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="ins_file">Insurance / Registration Document (PDF / image)</label>
+                <input type="file" id="ins_file" name="ins_file" accept="image/*,application/pdf" />
+                {% if data.ins_file %}
+                    <p style="margin-top:0.3rem; font-size:0.85rem; color:var(--text-muted);">Current: <a href="{{ url_for('uploaded_file', filename=data.ins_file) }}" target="_blank">{{ data.ins_file }}</a></p>
+                {% endif %}
+            </div>
+
+        
+        {% else %}
+            <div class="section-title"><i class="fa-solid fa-cubes"></i> Custom Blocks</div>
+            <div id="blocks-container">
+                {% for block in data.blocks %}
+                    <div class="block-row mb-2" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                        <select name="block_type[]" class="form-select" style="flex:0 0 120px;">
+                            <option value="title" {% if block.type == 'title' %}selected{% endif %}>Title</option>
+                            <option value="paragraph" {% if block.type == 'paragraph' %}selected{% endif %}>Paragraph</option>
+                            <option value="image" {% if block.type == 'image' %}selected{% endif %}>Image URL</option>
+                            <option value="video" {% if block.type == 'video' %}selected{% endif %}>YouTube Embed</option>
+                            <option value="map" {% if block.type == 'map' %}selected{% endif %}>Map Location</option>
+                            <option value="button" {% if block.type == 'button' %}selected{% endif %}>Button (link)</option>
+                        </select>
+                        <input type="text" name="block_content[]" class="form-control" value="{{ block.content }}" placeholder="Content" style="flex:1;" />
+                        <button type="button" class="btn btn-danger btn-sm remove-block">✕</button>
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="add-block">Add Block</button>
+        {% endif %}
+
+        
+        <div class="section-title"><i class="fa-solid fa-image"></i> Logo</div>
+        <div class="form-group">
+            {% if pack.logo_path %}
+                <p style="margin-bottom:0.5rem;">Current logo: <img src="{{ url_for('uploaded_file', filename=pack.logo_path) }}" alt="Logo" style="max-height:80px; border-radius:4px; border:1px solid var(--border-medium); display:block; margin-top:0.3rem;" /></p>
+            {% endif %}
+            <label for="logo">Upload new logo (optional – replaces existing)</label>
+            <input type="file" id="logo" name="logo" accept="image/*" />
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-flag"></i> Status</div>
+        <div class="form-group">
+            <select name="status">
+                {% for st in ['active','stolen','recovered','inactive'] %}
+                    <option value="{{ st }}" {% if pack.status == st %}selected{% endif %}>{{ st|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-globe"></i> Visibility</div>
+        <div class="form-group" style="display:flex; align-items:center; gap:1rem;">
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                <input type="checkbox" name="is_public" {% if pack.is_public %}checked{% endif %} />
+                Public (anyone can view)
+            </label>
+            <span style="color:var(--text-muted); font-size:0.85rem;">Uncheck to make private (only you can view)</span>
+        </div>
+
+        
+        {% if pack.use_case != 'medical' %}
+            <div class="section-title"><i class="fa-solid fa-lock"></i> Security</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="pin">PIN (optional – protects sensitive data)</label>
+                    <input type="password" id="pin" name="pin" placeholder="4-8 digits (leave blank to keep current)" />
+                </div>
+                <div class="form-group">
+                    <label for="security_question">Security Question (for finders)</label>
+                    <input type="text" id="security_question" name="security_question" value="{{ pack.security_question or '' }}" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="security_answer">Security Answer</label>
+                <input type="text" id="security_answer" name="security_answer" placeholder="Case‑insensitive (leave blank to keep current)" />
+            </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update Pack</button>
+            <a href="{{ url_for('pack_dashboard', pack_id=pack.id, secret=pack.secret_key) }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    
+    document.getElementById('add-block')?.addEventListener('click', function() {
+        const container = document.getElementById('blocks-container');
+        const row = container.querySelector('.block-row').cloneNode(true);
+        row.querySelectorAll('input').forEach(inp => inp.value = '');
+        row.querySelector('select').selectedIndex = 0;
+        container.appendChild(row);
+    });
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-block')) {
+            const row = e.target.closest('.block-row');
+            if (document.querySelectorAll('.block-row').length > 1) {
+                row.remove();
+            }
+        }
+    });
+</script>
+{% endblock %}

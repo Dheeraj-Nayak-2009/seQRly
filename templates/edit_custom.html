@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Custom QR – seQRly{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2>✏️ Edit Custom QR</h2>
+    <p class="sub">Modify your page blocks.</p>
+
+    <form method="POST" enctype="multipart/form-data" id="customForm">
+        <div class="section-title"><i class="fa-solid fa-layer-group"></i> Page Blocks</div>
+        <div id="blocks-container">
+            {% for block in data.blocks %}
+                <div class="block-row" style="background:var(--bg-elevated); border:1px solid var(--border-medium); border-radius:var(--radius-sm); padding:0.8rem; margin-bottom:0.8rem;">
+                    <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
+                        <select name="block_type[]" class="form-select block-type" style="flex:0 0 150px; padding:0.4rem;">
+                            <option value="title" {% if block.type == 'title' %}selected{% endif %}>Title</option>
+                            <option value="paragraph" {% if block.type == 'paragraph' %}selected{% endif %}>Paragraph</option>
+                            <option value="image" {% if block.type == 'image' %}selected{% endif %}>Image</option>
+                            <option value="video" {% if block.type == 'video' %}selected{% endif %}>Video</option>
+                            <option value="map" {% if block.type == 'map' %}selected{% endif %}>Map</option>
+                            <option value="button" {% if block.type == 'button' %}selected{% endif %}>Button</option>
+                            <option value="file" {% if block.type == 'file' %}selected{% endif %}>File</option>
+                        </select>
+                        <div style="flex:1; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                            {% if block.type == 'file' %}
+                                <span style="color:var(--text-muted);">Current file: {{ block.content }}</span>
+                                <input type="file" name="block_file[]" class="form-control block-file" style="flex:1; min-width:150px;" />
+                                <input type="hidden" name="block_content[]" value="{{ block.content }}" />
+                            {% else %}
+                                <input type="text" name="block_content[]" class="form-control block-content" value="{{ block.content }}" style="flex:1; min-width:150px;" />
+                            {% endif %}
+                            <div style="display:flex; gap:0.3rem;">
+                                <button type="button" class="btn btn-secondary btn-sm move-up"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button type="button" class="btn btn-secondary btn-sm move-down"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button type="button" class="btn btn-danger btn-sm remove-block"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-sm" id="addBlockBtn"><i class="fa-solid fa-plus"></i> Add Block</button>
+
+        
+        <div class="section-title"><i class="fa-solid fa-image"></i> Logo</div>
+        <div class="form-group">
+            {% if pack.logo_path %}
+                <p>Current logo: <img src="{{ url_for('uploaded_file', filename=pack.logo_path) }}" alt="Logo" style="max-height:80px; border-radius:4px;" /></p>
+            {% endif %}
+            <input type="file" name="logo" accept="image/*" />
+        </div>
+
+        
+        <div class="section-title"><i class="fa-solid fa-flag"></i> Status</div>
+        <div class="form-group">
+            <select name="status">
+                {% for st in ['active','stolen','recovered','inactive'] %}
+                    <option value="{{ st }}" {% if pack.status == st %}selected{% endif %}>{{ st|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        
+        <div class="section-title"><i class="fa-solid fa-lock"></i> Privacy & Security</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="pin">PIN (optional – protects sensitive data)</label>
+                <input type="password" id="pin" name="pin" placeholder="4-8 digits" />
+            </div>
+            <div class="form-group">
+                <label for="security_question">Security Question</label>
+                <input type="text" id="security_question" name="security_question" value="{{ pack.security_question or '' }}" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="security_answer">Security Answer</label>
+            <input type="text" id="security_answer" name="security_answer" placeholder="Case‑insensitive" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update Pack</button>
+            <a href="{{ url_for('pack_dashboard', pack_id=pack.id, secret=pack.secret_key) }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+
+<template id="block-template">
+    <div class="block-row" style="background:var(--bg-elevated); border:1px solid var(--border-medium); border-radius:var(--radius-sm); padding:0.8rem; margin-bottom:0.8rem;">
+        <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
+            <select name="block_type[]" class="form-select block-type" style="flex:0 0 150px; padding:0.4rem;">
+                <option value="title">Title</option>
+                <option value="paragraph">Paragraph</option>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="map">Map</option>
+                <option value="button">Button</option>
+                <option value="file">File</option>
+            </select>
+            <div style="flex:1; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                <input type="text" name="block_content[]" class="form-control block-content" placeholder="Content (text or URL)" style="flex:1; min-width:150px;" />
+                <input type="file" name="block_file[]" class="form-control block-file" style="flex:1; min-width:150px; display:none;" />
+                <div style="display:flex; gap:0.3rem;">
+                    <button type="button" class="btn btn-secondary btn-sm move-up"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button type="button" class="btn btn-secondary btn-sm move-down"><i class="fa-solid fa-arrow-down"></i></button>
+                    <button type="button" class="btn btn-danger btn-sm remove-block"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    (function() {
+        const container = document.getElementById('blocks-container');
+        const template = document.getElementById('block-template');
+
+        function addBlock() {
+            const clone = template.content.cloneNode(true);
+            container.appendChild(clone);
+            const row = container.lastElementChild;
+            const typeSelect = row.querySelector('.block-type');
+            const contentInput = row.querySelector('.block-content');
+            const fileInput = row.querySelector('.block-file');
+
+            function updateInputs() {
+                if (typeSelect.value === 'file') {
+                    contentInput.style.display = 'none';
+                    fileInput.style.display = 'block';
+                } else {
+                    contentInput.style.display = 'block';
+                    fileInput.style.display = 'none';
+                }
+            }
+
+            typeSelect.addEventListener('change', updateInputs);
+            updateInputs();
+
+            
+            bindEvents();
+        }
+
+        function bindEvents() {
+            document.querySelectorAll('.remove-block').forEach(btn => {
+                btn.removeEventListener('click', removeHandler);
+                btn.addEventListener('click', removeHandler);
+            });
+            document.querySelectorAll('.move-up').forEach(btn => {
+                btn.removeEventListener('click', moveUpHandler);
+                btn.addEventListener('click', moveUpHandler);
+            });
+            document.querySelectorAll('.move-down').forEach(btn => {
+                btn.removeEventListener('click', moveDownHandler);
+                btn.addEventListener('click', moveDownHandler);
+            });
+        }
+
+        function removeHandler(e) {
+            const row = e.target.closest('.block-row');
+            if (row && document.querySelectorAll('.block-row').length > 1) {
+                row.remove();
+            } else {
+                alert('You need at least one block.');
+            }
+        }
+
+        function moveUpHandler(e) {
+            const row = e.target.closest('.block-row');
+            const prev = row.previousElementSibling;
+            if (prev) container.insertBefore(row, prev);
+        }
+
+        function moveDownHandler(e) {
+            const row = e.target.closest('.block-row');
+            const next = row.nextElementSibling;
+            if (next) container.insertBefore(next, row);
+        }
+
+        
+        if (container.children.length === 0) addBlock();
+
+        document.getElementById('addBlockBtn').addEventListener('click', addBlock);
+        bindEvents();
+    })();
+</script>
+
+<style>
+    .block-row select, .block-row input {
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+        border: 1px solid var(--border-medium);
+        border-radius: var(--radius-sm);
+        padding: 0.4rem;
+    }
+    .block-row select:focus, .block-row input:focus {
+        border-color: var(--accent);
+        outline: none;
+    }
+    .block-row .btn {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}

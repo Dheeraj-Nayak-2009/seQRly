@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Custom QR – seQRly{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2>⚙️ Custom QR – Build your page</h2>
+    <p class="sub">Add blocks: title, paragraph, image, video, map, button, or file download.</p>
+
+    <form method="POST" enctype="multipart/form-data" id="customForm">
+
+        <div class="section-title"><i class="fa-solid fa-layer-group"></i> Page Blocks</div>
+        <div id="blocks-container">
+            
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-sm" id="addBlockBtn"><i class="fa-solid fa-plus"></i> Add Block</button>
+
+        
+        <div class="section-title"><i class="fa-solid fa-image"></i> Logo (optional)</div>
+        <div class="form-group">
+            <input type="file" name="logo" accept="image/*" />
+        </div>
+
+        
+        <div class="section-title"><i class="fa-solid fa-lock"></i> Privacy & Security</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="pin">PIN (optional – protects sensitive data)</label>
+                <input type="password" id="pin" name="pin" placeholder="4-8 digits" />
+            </div>
+            <div class="form-group">
+                <label for="security_question">Security Question</label>
+                <input type="text" id="security_question" name="security_question" placeholder="e.g. What is your secret?" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="security_answer">Security Answer</label>
+            <input type="text" id="security_answer" name="security_answer" placeholder="Case‑insensitive" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Generate QR</button>
+            <a href="{{ url_for('select') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+
+<template id="block-template">
+    <div class="block-row" style="background:var(--bg-elevated); border:1px solid var(--border-medium); border-radius:var(--radius-sm); padding:0.8rem; margin-bottom:0.8rem;">
+        <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
+            <select name="block_type[]" class="form-select block-type" style="flex:0 0 150px; padding:0.4rem;">
+                <option value="title">Title</option>
+                <option value="paragraph">Paragraph</option>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="map">Map</option>
+                <option value="button">Button</option>
+                <option value="file">File</option>
+            </select>
+            <div style="flex:1; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <input type="text" name="block_content[]" class="form-control block-content" placeholder="Content (text or URL)" style="flex:1; min-width:150px;" />
+                
+                <div class="file-upload-wrapper" style="display:none; flex:1; min-width:150px;">
+                    <input type="file" name="block_file[]" class="form-control block-file" style="padding:0.3rem;" />
+                </div>
+                <div style="display:flex; gap:0.3rem;">
+                    <button type="button" class="btn btn-secondary btn-sm move-up" title="Move up"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button type="button" class="btn btn-secondary btn-sm move-down" title="Move down"><i class="fa-solid fa-arrow-down"></i></button>
+                    <button type="button" class="btn btn-danger btn-sm remove-block" title="Remove"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    (function() {
+        const container = document.getElementById('blocks-container');
+        const template = document.getElementById('block-template');
+
+        function addBlock() {
+            const clone = template.content.cloneNode(true);
+            container.appendChild(clone);
+            const row = container.lastElementChild;
+            const typeSelect = row.querySelector('.block-type');
+            const contentInput = row.querySelector('.block-content');
+            const fileWrapper = row.querySelector('.file-upload-wrapper');
+            const fileInput = row.querySelector('.block-file');
+
+            function updateVisibility() {
+                if (typeSelect.value === 'file') {
+                    contentInput.style.display = 'none';
+                    fileWrapper.style.display = 'block';
+                    
+                    
+                } else {
+                    contentInput.style.display = 'block';
+                    fileWrapper.style.display = 'none';
+                }
+            }
+
+            typeSelect.addEventListener('change', updateVisibility);
+            updateVisibility();
+
+            
+            bindEvents();
+        }
+
+        function bindEvents() {
+            document.querySelectorAll('.remove-block').forEach(btn => {
+                btn.removeEventListener('click', removeHandler);
+                btn.addEventListener('click', removeHandler);
+            });
+            document.querySelectorAll('.move-up').forEach(btn => {
+                btn.removeEventListener('click', moveUpHandler);
+                btn.addEventListener('click', moveUpHandler);
+            });
+            document.querySelectorAll('.move-down').forEach(btn => {
+                btn.removeEventListener('click', moveDownHandler);
+                btn.addEventListener('click', moveDownHandler);
+            });
+        }
+
+        function removeHandler(e) {
+            const row = e.target.closest('.block-row');
+            if (row && document.querySelectorAll('.block-row').length > 1) {
+                row.remove();
+            } else {
+                alert('You need at least one block.');
+            }
+        }
+
+        function moveUpHandler(e) {
+            const row = e.target.closest('.block-row');
+            const prev = row.previousElementSibling;
+            if (prev) {
+                container.insertBefore(row, prev);
+            }
+        }
+
+        function moveDownHandler(e) {
+            const row = e.target.closest('.block-row');
+            const next = row.nextElementSibling;
+            if (next) {
+                container.insertBefore(next, row);
+            }
+        }
+
+        
+        addBlock();
+        document.getElementById('addBlockBtn').addEventListener('click', addBlock);
+    })();
+function updateEditor() {
+    const type = typeSelect.value;
+    if (type === 'form') {
+        
+        
+    }
+    
+    const contentWrapper = contentInput.parentElement;
+    if (type === 'file') {
+        
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.name = 'block_file[]';
+        fileInput.className = 'form-control block-file';
+        fileInput.accept = '*/*';
+        contentWrapper.replaceChild(fileInput, contentInput);
+    } else {
+        
+        if (!contentInput.parentElement) {
+            const newText = document.createElement('input');
+            newText.type = 'text';
+            newText.name = 'block_content[]';
+            newText.className = 'form-control block-content';
+            newText.placeholder = 'Content (text or URL)';
+            contentWrapper.appendChild(newText);
+        }
+    }
+}
+</script>
+
+<style>
+    .block-row select, .block-row input {
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+        border: 1px solid var(--border-medium);
+        border-radius: var(--radius-sm);
+        padding: 0.4rem;
+    }
+    .block-row select:focus, .block-row input:focus {
+        border-color: var(--accent);
+        outline: none;
+    }
+    .block-row .btn {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    .file-upload-wrapper input[type="file"] {
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+        border: 1px solid var(--border-medium);
+        border-radius: var(--radius-sm);
+        padding: 0.3rem;
+    }
+</style>
+{% endblock %}

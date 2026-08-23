@@ -46,7 +46,7 @@
 | **Requests** | IP geolocation (ip-api.com) |
 | **Jinja2** | Templating with template inheritance |
 | **Font Awesome** | Icons |
-| **Google Fonts** (Inter & Playfair Display) | Typography |
+| **Google Fonts** (Lexend & Playfair Display) | Typography |
 
 ---
 
